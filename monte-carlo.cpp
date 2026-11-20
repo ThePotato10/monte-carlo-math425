@@ -342,43 +342,6 @@ int main(int argc, char** argv) {
     // ---- 5. Bootstrap confidence interval ----------------------------------
     // Sampling uncertainty from having only n gaps, which dominates the
     // simulation error above.
-    std::printf("5. Bootstrap over the %zu gaps (10000 resamples)\n", gaps.size());
-    {
-        const int B = 10000;
-        std::uniform_int_distribution<size_t> pick(0, gaps.size() - 1);
-        std::vector<double> bw(B), ratio(B), excess(B);
-        std::vector<double> sample(gaps.size());
-        for (int b = 0; b < B; ++b) {
-            for (double& x : sample) x = gaps[pick(rng)];
-            double w = sizeBiasedWait(sample), m = mean(sample);
-            bw[b] = w;
-            ratio[b] = w / (m / 2);
-            excess[b] = w - m / 2;
-        }
-        auto ci = [&](std::vector<double>& v, const char* label, const char* unit) {
-            std::sort(v.begin(), v.end());
-            std::printf("  %-34s 95%% CI [%.3f, %.3f]%s\n", label, v[(size_t)(0.025 * B)],
-                        v[(size_t)(0.975 * B)], unit);
-        };
-        ci(bw, "expected wait", " min");
-        ci(excess, "excess over naive mu/2", " min");
-        ci(ratio, "expected wait / naive", "");
-        long below = std::count_if(ratio.begin(), ratio.end(), [](double r) { return r <= 1.0; });
-        std::printf("  share of resamples with no paradox  %.4f\n", (double)below / B);
-    }
-    std::printf("\n");
-
-    // ---- 6. Measured first-bus waits ---------------------------------------
-    std::printf("6. Stopwatch waits for the first bus (Sessions tab)\n");
-    {
-        double s = 0;
-        for (double w : kMeasuredFirstBusWaits) s += w;
-        size_t n = sizeof kMeasuredFirstBusWaits / sizeof *kMeasuredFirstBusWaits;
-        std::printf("  mean of %zu measured waits          %6.3f min\n", n, s / n);
-        for (double w : kMeasuredFirstBusWaits)
-            std::printf("  %.2f min falls at simulated percentile %5.1f\n", w, 100 * renewal.cdf(w));
-        std::printf("  (only %zu observations: too few to test, shown for comparison)\n", n);
-    }
 
     // ---- Histogram ---------------------------------------------------------
     {
