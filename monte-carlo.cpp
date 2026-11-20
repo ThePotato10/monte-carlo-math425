@@ -213,7 +213,8 @@ static SimResult simulateRenewal(const std::vector<double>& gaps, long trials,
 }
 
 static void printResult(const char* label, const SimResult& r, double theory) {
-    std::printf("  %-34s %6.3f ± %.3f min", label, r.wait.mean, 1.96 * r.wait.se());
+    std::printf("  %-34s %6.3f ± %.3f min  (SD %6.3f)", label, r.wait.mean, 1.96 * r.wait.se(),
+                r.wait.sd());
     if (!std::isnan(theory)) std::printf("   (theory %6.3f)", theory);
     std::printf("\n");
 }
